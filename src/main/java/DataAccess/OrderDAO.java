@@ -1,6 +1,6 @@
 package DataAccess;
 
-import Model.Order;
+import Model.Orders;
 
-public class OrderDAO extends  AbstractDAO<Order> {
+public class OrderDAO extends  AbstractDAO<Orders> {
 }
