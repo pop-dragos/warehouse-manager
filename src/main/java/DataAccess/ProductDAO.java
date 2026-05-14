@@ -2,5 +2,8 @@ package DataAccess;
 
 import Model.Product;
 
-public class ProductDAO extends  AbstractDAO<Product> {
+/**
+ * Data Access Object for the Product entity that extends {@link AbstractDAO}.
+ */
+public class ProductDAO extends AbstractDAO<Product> {
 }

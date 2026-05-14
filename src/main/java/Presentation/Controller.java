@@ -19,17 +19,14 @@ public class Controller {
         this.view = view;
         refresh();
 
-        // --- CLIENT LISTENERS ---
         view.addClientL(e -> handleAddClient());
-        view.editClientL(e -> handleEditClient()); // Lipsa apel
-        view.delClientL(e -> handleDeleteClient()); // Lipsa apel
+        view.editClientL(e -> handleEditClient());
+        view.delClientL(e -> handleDeleteClient());
 
-        // --- PRODUCT LISTENERS ---
         view.addProdL(e -> handleAddProduct());
-        view.editProdL(e -> handleEditProduct()); // Lipsa apel
-        view.delProdL(e -> handleDeleteProduct()); // Lipsa apel
+        view.editProdL(e -> handleEditProduct());
+        view.delProdL(e -> handleDeleteProduct());
 
-        // --- ORDER LISTENERS ---
         view.addOrderL(e -> {
             try {
                 int clientIdx = view.getSelectedClientIndex();
@@ -49,12 +46,10 @@ public class Controller {
 
         view.showOrdersL(e -> {
             List<Orders> allOrders = oBLL.findAllOrders();
-            DefaultTableModel model = TableGenerator.generateTable(allOrders);
+            DefaultTableModel model = CreateTables.generateTable(allOrders);
             view.showOrdersWindow(model);
         });
     }
-
-    // --- LOGICĂ CLIENȚI ---
 
     private void handleAddClient() {
         JTextField name = new JTextField(); JTextField addr = new JTextField();
@@ -102,8 +97,6 @@ public class Controller {
         } else { JOptionPane.showMessageDialog(null, "Select a client to delete!"); }
     }
 
-    // --- LOGICĂ PRODUSE ---
-
     private void handleAddProduct() {
         JTextField name = new JTextField(); JTextField qty = new JTextField();
         Object[] msg = {"Name:", name, "Quantity:", qty};
@@ -150,8 +143,8 @@ public class Controller {
     private void refresh() {
         currentClients = cBLL.findAllClients();
         currentProducts = pBLL.findAllProducts();
-        view.setClientTable(TableGenerator.generateTable(currentClients));
-        view.setProductTable(TableGenerator.generateTable(currentProducts));
+        view.setClientTable(CreateTables.generateTable(currentClients));
+        view.setProductTable(CreateTables.generateTable(currentProducts));
         view.setClientCombo(currentClients.stream().map(Client::getName).toArray(String[]::new));
         view.setProductCombo(currentProducts.stream().map(Product::getName).toArray(String[]::new));
     }

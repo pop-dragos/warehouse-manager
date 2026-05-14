@@ -8,11 +8,9 @@
     public class View extends JFrame {
         private JTabbedPane tabbedPane = new JTabbedPane();
 
-        // Tabele principale
         private JTable clientTable = new JTable();
         private JTable productTable = new JTable();
 
-        // Butoane
         private JButton btnAddClient = new JButton("Add Client");
         private JButton btnEditClient = new JButton("Edit Client");
         private JButton btnDeleteClient = new JButton("Delete Client");
@@ -20,7 +18,6 @@
         private JButton btnEditProduct = new JButton("Edit Product");
         private JButton btnDeleteProduct = new JButton("Delete Product");
 
-        // Componente Comenzi
         private JComboBox<String> clientCombo = new JComboBox<>();
         private JComboBox<String> productCombo = new JComboBox<>();
         private JTextField tfOrderQuantity = new JTextField(10);
@@ -63,12 +60,11 @@
             g.gridx = 1; panel.add(tfOrderQuantity, g);
 
             g.gridx = 1; g.gridy = 3; panel.add(btnPlaceOrder, g);
-            g.gridy = 4; panel.add(btnShowOrders, g); // Plasăm butonul sub "Place Order"
+            g.gridy = 4; panel.add(btnShowOrders, g);
 
             return panel;
         }
 
-        // Metodă pentru a deschide fereastra de istoric
         public void showOrdersWindow(DefaultTableModel model) {
             JFrame historyFrame = new JFrame("Orders History");
             historyFrame.setSize(600, 400);
@@ -78,7 +74,6 @@
             historyFrame.setVisible(true);
         }
 
-        // Getters & Setters
         public void setClientTable(DefaultTableModel m) { clientTable.setModel(m); }
         public void setProductTable(DefaultTableModel m) { productTable.setModel(m); }
         public void setClientCombo(String[] c) { clientCombo.setModel(new DefaultComboBoxModel<>(c)); }
@@ -90,7 +85,6 @@
         public int getSelectedProductIndex() { return productCombo.getSelectedIndex(); }
         public String getOrderQty() { return tfOrderQuantity.getText(); }
 
-        // Listeners
         public void addClientL(ActionListener a) { btnAddClient.addActionListener(a); }
         public void editClientL(ActionListener a) { btnEditClient.addActionListener(a); }
         public void delClientL(ActionListener a) { btnDeleteClient.addActionListener(a); }

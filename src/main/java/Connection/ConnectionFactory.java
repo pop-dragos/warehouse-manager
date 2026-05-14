@@ -8,7 +8,10 @@ import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
+/**
+ * Factory class responsible for managing database connections.
+ * It implements the Singleton pattern for creating and closing PostgreSQL database connections.
+ */
 public class ConnectionFactory {
     private static final Logger LOGGER = Logger.getLogger(ConnectionFactory.class.getName());
     private static final String DRIVER = "org.postgresql.Driver";
@@ -18,6 +21,9 @@ public class ConnectionFactory {
 
     private static ConnectionFactory singleInstance = new ConnectionFactory();
 
+    /**
+     * Private constructor that loads the PostgreSQL JDBC driver.
+     */
     private ConnectionFactory() {
         try {
             Class.forName(DRIVER);
@@ -26,6 +32,10 @@ public class ConnectionFactory {
         }
     }
 
+    /**
+     * Attempts to establish a connection to the database.
+     * @return A {@link Connection} object, or null if connection fails.
+     */
     private Connection createConnection() {
         Connection connection = null;
         try {
@@ -37,10 +47,18 @@ public class ConnectionFactory {
         return connection;
     }
 
+    /**
+     * Provides a database connection through the singleton instance.
+     * @return An active database {@link Connection}.
+     */
     public static Connection getConnection() {
         return singleInstance.createConnection();
     }
 
+    /**
+     * Closes the provided database connection.
+     * @param connection The connection to be closed.
+     */
     public static void close(Connection connection) {
         if (connection != null) {
             try {
@@ -51,6 +69,10 @@ public class ConnectionFactory {
         }
     }
 
+    /**
+     * Closes the provided SQL statement.
+     * @param statement The statement to be closed.
+     */
     public static void close(Statement statement) {
         if (statement != null) {
             try {
@@ -61,6 +83,10 @@ public class ConnectionFactory {
         }
     }
 
+    /**
+     * Closes the provided result set.
+     * @param resultSet The result set to be closed.
+     */
     public static void close(ResultSet resultSet) {
         if (resultSet != null) {
             try {

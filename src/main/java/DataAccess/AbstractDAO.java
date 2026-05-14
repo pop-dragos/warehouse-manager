@@ -6,21 +6,35 @@ import java.lang.reflect.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import Connection.ConnectionFactory;
 
+/**
+ * Generic Data Access Object class that provides common database operations (CRUD).
+ * It uses Reflection to dynamically generate SQL queries and map database result
+ * sets to Java objects.
+ * * @param <T> The type of the entity this DAO handles.
+ */
 public class AbstractDAO<T> {
     protected static final Logger LOGGER = Logger.getLogger(AbstractDAO.class.getName());
 
     private final Class<T> type;
 
+    /**
+     * Constructor that uses reflection to determine the class type of the generic parameter T.
+     */
     @SuppressWarnings("unchecked")
     public AbstractDAO() {
         this.type = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
     }
 
+    /**
+     * Generates a SELECT query filtered by a specific field.
+     * @param field The column name used in the WHERE clause.
+     * @return The SQL query string.
+     */
     private String createSelectQuery(String field) {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ");
@@ -29,6 +43,10 @@ public class AbstractDAO<T> {
         return sb.toString();
     }
 
+    /**
+     * Generates a SELECT * query for the entity table.
+     * @return The SQL query string.
+     */
     private String createSelectAllQuery() {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ");
@@ -36,6 +54,10 @@ public class AbstractDAO<T> {
         return sb.toString();
     }
 
+    /**
+     * Generates an INSERT query based on the fields of the entity class.
+     * @return The SQL query string.
+     */
     private String createInsertQuery() {
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ");
@@ -61,6 +83,10 @@ public class AbstractDAO<T> {
         return sb.toString();
     }
 
+    /**
+     * Generates an UPDATE query for the entity.
+     * @return The SQL query string.
+     */
     private String createUpdateQuery() {
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ");
@@ -78,6 +104,10 @@ public class AbstractDAO<T> {
         return sb.toString();
     }
 
+    /**
+     * Generates a DELETE query filtered by ID.
+     * @return The SQL query string.
+     */
     private String createDeleteQuery() {
         StringBuilder sb = new StringBuilder();
         sb.append("DELETE FROM ");
@@ -86,6 +116,11 @@ public class AbstractDAO<T> {
         return sb.toString();
     }
 
+    /**
+     * Searches for a record by its unique identifier.
+     * @param id The ID to search for.
+     * @return An instance of T, or null if not found.
+     */
     public T findById(int id) {
         Connection connection = null;
         PreparedStatement statement = null;
@@ -111,6 +146,10 @@ public class AbstractDAO<T> {
         return null;
     }
 
+    /**
+     * Retrieves all records from the corresponding table.
+     * @return A list of entity instances.
+     */
     public List<T> findAll() {
         Connection connection = null;
         PreparedStatement statement = null;
@@ -132,6 +171,11 @@ public class AbstractDAO<T> {
         return null;
     }
 
+    /**
+     * Maps a ResultSet to a list of objects using reflection.
+     * @param resultSet The SQL result set.
+     * @return A list of instantiated objects.
+     */
     private List<T> createObjects(ResultSet resultSet) {
         List<T> list = new ArrayList<T>();
         try {
@@ -154,6 +198,11 @@ public class AbstractDAO<T> {
         return list;
     }
 
+    /**
+     * Inserts an object into the database.
+     * @param t The object to be inserted.
+     * @return The inserted object.
+     */
     public T insert(T t) {
         Connection connection = null;
         PreparedStatement statement = null;
@@ -194,6 +243,11 @@ public class AbstractDAO<T> {
         return t;
     }
 
+    /**
+     * Updates an existing record in the database.
+     * @param t The object containing the values to be updated.
+     * @return The updated object.
+     */
     public T update(T t) {
         Connection connection = null;
         PreparedStatement statement = null;
@@ -231,6 +285,10 @@ public class AbstractDAO<T> {
         return t;
     }
 
+    /**
+     * Deletes a record from the database.
+     * @param t The object representing the record to be deleted.
+     */
     public void delete(T t) {
         Connection connection = null;
         PreparedStatement statement = null;

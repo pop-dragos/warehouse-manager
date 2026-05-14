@@ -1,5 +1,10 @@
 package Model;
 
+/**
+ * Represents a client entity in the system.
+ * This class maps to the "client" table in the database and holds
+ * personal information such as name, address, email, and age.
+ */
 public class Client {
     private int id;
     private String name;
@@ -7,8 +12,18 @@ public class Client {
     private String email;
     private int age;
 
+    /**
+     * Default constructor required for reflection-based instantiation.
+     */
     public Client() {}
 
+    /**
+     * Constructs a new Client with the specified details.
+     * @param name The full name of the client.
+     * @param address The residential address.
+     * @param email The contact email address.
+     * @param age The age of the client.
+     */
     public Client(String name, String address, String email, int age) {
         this.name = name;
         this.address = address;
