@@ -1,20 +1,29 @@
 package Presentation;
 
 import BusinessLogic.*;
+import DataAccess.BillDAO;
 import Model.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
 
+/**
+ * Main Controller class in the layered architecture that orchestrates the application flow.
+ */
 public class Controller {
     private View view;
     private ClientBLL cBLL = new ClientBLL();
     private ProductBLL pBLL = new ProductBLL();
     private OrderBLL oBLL = new OrderBLL();
+    private BillDAO billDAO = new BillDAO();
 
     private List<Client> currentClients;
     private List<Product> currentProducts;
 
+    /**
+     * Constructs the Controller and hooks it up with the core application view.
+     * * @param view the main UI window frame container instance
+     */
     public Controller(View view) {
         this.view = view;
         refresh();
@@ -51,6 +60,9 @@ public class Controller {
         });
     }
 
+    /**
+     * Spawns an input dialog form to capture data for a new Client record and submits it to the validation layer.
+     */
     private void handleAddClient() {
         JTextField name = new JTextField(); JTextField addr = new JTextField();
         JTextField mail = new JTextField(); JTextField age = new JTextField();
@@ -63,6 +75,10 @@ public class Controller {
         }
     }
 
+    /**
+     * Extracts the currently selected Client row from the UI, pre-populates an input
+     * dialog with existing values, and pushes updates down to the database layers.
+     */
     private void handleEditClient() {
         int row = view.getClientTable().getSelectedRow();
         if (row != -1) {
@@ -84,6 +100,9 @@ public class Controller {
         } else { JOptionPane.showMessageDialog(null, "Select a client to edit!"); }
     }
 
+    /**
+     * Identifies the selected Client record and dispatches a deletion request.
+     */
     private void handleDeleteClient() {
         int row = view.getClientTable().getSelectedRow();
         if (row != -1) {
@@ -97,6 +116,9 @@ public class Controller {
         } else { JOptionPane.showMessageDialog(null, "Select a client to delete!"); }
     }
 
+    /**
+     * Spawns an input dialog form to capture stock data for a new Product record and forwards it to the database.
+     */
     private void handleAddProduct() {
         JTextField name = new JTextField(); JTextField qty = new JTextField();
         Object[] msg = {"Name:", name, "Quantity:", qty};
@@ -108,6 +130,10 @@ public class Controller {
         }
     }
 
+    /**
+     * Extracts the currently selected Product row from the UI, pre-populates an input
+     * dialog with existing values, and pushes updates down to the database layers.
+     */
     private void handleEditProduct() {
         int row = view.getProductTable().getSelectedRow();
         if (row != -1) {
@@ -127,6 +153,9 @@ public class Controller {
         } else { JOptionPane.showMessageDialog(null, "Select a product to edit!"); }
     }
 
+    /**
+     * Identifies the selected Product record and dispatches a deletion request.
+     */
     private void handleDeleteProduct() {
         int row = view.getProductTable().getSelectedRow();
         if (row != -1) {
@@ -140,12 +169,27 @@ public class Controller {
         } else { JOptionPane.showMessageDialog(null, "Select a product to delete!"); }
     }
 
+    /**
+     * Refreshes the user interface state by pulling fresh datasets from the database layers.
+     */
     private void refresh() {
         currentClients = cBLL.findAllClients();
         currentProducts = pBLL.findAllProducts();
+        List<Bill> currentBills = billDAO.findAll();
+
         view.setClientTable(CreateTables.generateTable(currentClients));
         view.setProductTable(CreateTables.generateTable(currentProducts));
-        view.setClientCombo(currentClients.stream().map(Client::getName).toArray(String[]::new));
-        view.setProductCombo(currentProducts.stream().map(Product::getName).toArray(String[]::new));
+        view.setBillTable(CreateTables.generateTable(currentBills));
+
+        String[] clientComboItems = currentClients.stream()
+                .map(client -> client.getId() + " - " + client.getName())
+                .toArray(String[]::new);
+        view.setClientCombo(clientComboItems);
+
+        String[] productComboItems = currentProducts.stream()
+                .filter(product -> product.getQuantity() > 0)
+                .map(product -> product.getName() + " - " + product.getQuantity() + " pcs.")
+                .toArray(String[]::new);
+        view.setProductCombo(productComboItems);
     }
 }

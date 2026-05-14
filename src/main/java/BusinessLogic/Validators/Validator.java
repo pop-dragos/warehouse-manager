@@ -2,7 +2,7 @@ package BusinessLogic.Validators;
 
 /**
  * Generic interface for validating objects of type T.
- * * @param <T> The type of the object to be validated.
+ * @param <T> The type of the object to be validated.
  */
 public interface Validator<T> {
 

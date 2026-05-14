@@ -16,6 +16,7 @@ public class BillDAO {
     protected static final Logger LOGGER = Logger.getLogger(BillDAO.class.getName());
 
     private static final String INSERT_QUERY = "INSERT INTO Bill (id, clientId, productName, quantity, createdAt) VALUES (?,?,?,?,?)";
+    private static final String SELECT_ALL_QUERY = "SELECT * FROM Bill";
 
     /**
      * Inserts a new bill record into the database.
@@ -42,5 +43,42 @@ public class BillDAO {
             ConnectionFactory.close(statement);
             ConnectionFactory.close(connection);
         }
+    }
+
+    /**
+     * Retrieves all bill records from the database.
+     * @return A list of all Bill objects found.
+     */
+    public List<Bill> findAll() {
+        List<Bill> billList = new ArrayList<>();
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = ConnectionFactory.getConnection();
+            statement = connection.prepareStatement(SELECT_ALL_QUERY);
+            resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                int clientId = resultSet.getInt("clientId");
+                String productName = resultSet.getString("productName");
+                int quantity = resultSet.getInt("quantity");
+
+                java.time.LocalDateTime createdAt = resultSet.getTimestamp("createdAt").toLocalDateTime();
+
+                Bill bill = new Bill(id, clientId, productName, quantity, createdAt);
+                billList.add(bill);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "BillDAO:findAll " + e.getMessage());
+        } finally {
+            ConnectionFactory.close(resultSet);
+            ConnectionFactory.close(statement);
+            ConnectionFactory.close(connection);
+        }
+
+        return billList;
     }
 }

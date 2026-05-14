@@ -15,7 +15,7 @@ import Connection.ConnectionFactory;
  * Generic Data Access Object class that provides common database operations (CRUD).
  * It uses Reflection to dynamically generate SQL queries and map database result
  * sets to Java objects.
- * * @param <T> The type of the entity this DAO handles.
+ * @param <T> The type of the entity this DAO handles.
  */
 public class AbstractDAO<T> {
     protected static final Logger LOGGER = Logger.getLogger(AbstractDAO.class.getName());

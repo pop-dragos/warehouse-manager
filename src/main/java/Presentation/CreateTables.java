@@ -7,7 +7,19 @@ import java.util.List;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
+/**
+ * Utility class responsible for automatically generating table models for Swing components.
+ */
 public class CreateTables {
+
+    /**
+     * Generates a {@link DefaultTableModel} automatically based on a generic list of objects.
+     * The table columns are mapped from the declared field names of the object's class,
+     * while rows are populated with their corresponding field values extracted via reflection.
+     * @param <T> the generic type of the objects in the list
+     * @param objects the list of data models to populate the table with; if null or empty, an empty table model is returned
+     * @return a configured {@code DefaultTableModel} populated with column titles and row data, ready to be attached to a {@code JTable}
+     */
     public static <T> DefaultTableModel generateTable(List<T> objects) {
         if (objects == null || objects.isEmpty()) {
             return new DefaultTableModel();
