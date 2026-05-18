@@ -12,8 +12,8 @@ import java.util.NoSuchElementException;
  * Business Logic Class for handling client-related operations.
  */
 public class ClientBLL {
-    private List<Validator<Client>> validators;
     private ClientDAO clientDAO;
+    private List<Validator<Client>> validators;
 
     /**
      * Initializes the ClientBLL with necessary validators and the corresponding DAO.

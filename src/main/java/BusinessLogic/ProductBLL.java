@@ -12,8 +12,8 @@ import java.util.NoSuchElementException;
  * Business Logic Class for managing product-related operations.
  */
 public class ProductBLL {
-    private List<Validator<Product>> validators;
     private ProductDAO productDAO;
+    private List<Validator<Product>> validators;
 
     /**
      * Initializes the ProductBLL with stock validators and the corresponding DAO.

@@ -16,10 +16,10 @@ import java.util.NoSuchElementException;
  * Business Logic Class for processing customer orders.
  */
 public class OrderBLL {
-    private List<Validator<Orders>> validators;
     private OrderDAO orderDAO;
     private ProductDAO productDAO;
     private BillDAO billDAO;
+    private List<Validator<Orders>> validators;
 
     /**
      * Initializes the OrderLL with necessary validators and the corresponding DAO.
@@ -33,19 +33,13 @@ public class OrderBLL {
         validators.add(new OrderQuantityValidator());
     }
 
-    // public Orders findOrderById(int id) {
-
-// Orders o = orderDAO.findById(id);
-
-// if (o == null) {
-
-// throw new NoSuchElementException("Order with id=" + id + " was not found!");
-
-// }
-
-// return o;
-
-// }
+     public Orders findOrderById(int id) {
+         Orders o = orderDAO.findById(id);
+         if (o == null) {
+             throw new NoSuchElementException("Order with id=" + id + " was not found!");
+         }
+         return o;
+     }
 
     /**
      * Retrieves a list of all orders placed in the system.

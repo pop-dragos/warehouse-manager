@@ -15,9 +15,6 @@ import java.util.logging.Logger;
 public class BillDAO {
     protected static final Logger LOGGER = Logger.getLogger(BillDAO.class.getName());
 
-    private static final String INSERT_QUERY = "INSERT INTO Bill (id, clientId, productName, quantity, createdAt) VALUES (?,?,?,?,?)";
-    private static final String SELECT_ALL_QUERY = "SELECT * FROM Bill";
-
     /**
      * Inserts a new bill record into the database.
      * @param bill The Bill object to be logged.
@@ -25,6 +22,8 @@ public class BillDAO {
     public void insert(Bill bill) {
         Connection connection = null;
         PreparedStatement statement = null;
+
+        String INSERT_QUERY = "INSERT INTO Bill (id, clientId, productName, quantity, createdAt) VALUES (?,?,?,?,?)";
 
         try {
             connection = ConnectionFactory.getConnection();
@@ -54,6 +53,8 @@ public class BillDAO {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
+
+        String SELECT_ALL_QUERY = "SELECT * FROM Bill";
 
         try {
             connection = ConnectionFactory.getConnection();

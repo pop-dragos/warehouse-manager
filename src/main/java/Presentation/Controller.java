@@ -36,28 +36,9 @@ public class Controller {
         view.editProdL(e -> handleEditProduct());
         view.delProdL(e -> handleDeleteProduct());
 
-        view.addOrderL(e -> {
-            try {
-                int clientIdx = view.getSelectedClientIndex();
-                int productIdx = view.getSelectedProductIndex();
-                int qty = Integer.parseInt(view.getOrderQty());
+        view.addOrderL(e -> handleAddOrder());
 
-                if (clientIdx != -1 && productIdx != -1) {
-                    Client sc = currentClients.get(clientIdx);
-                    Product sp = currentProducts.get(productIdx);
-
-                    oBLL.insertOrder(new Orders(sc.getId(), sp.getId(), qty));
-                    refresh();
-                    JOptionPane.showMessageDialog(null, "Order placed!");
-                }
-            } catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); }
-        });
-
-        view.showOrdersL(e -> {
-            List<Orders> allOrders = oBLL.findAllOrders();
-            DefaultTableModel model = CreateTables.generateTable(allOrders);
-            view.showOrdersWindow(model);
-        });
+        view.showOrdersL(e -> handleShowOrders());
     }
 
     /**
@@ -167,6 +148,37 @@ public class Controller {
                 refresh();
             } catch (Exception ex) { JOptionPane.showMessageDialog(null, "Cannot delete: " + ex.getMessage()); }
         } else { JOptionPane.showMessageDialog(null, "Select a product to delete!"); }
+    }
+
+    /**
+     * Extracts order details from the user interface and initiates a transaction placement.
+     */
+    private void handleAddOrder() {
+        try {
+            int clientIdx = view.getSelectedClientIndex();
+            int productIdx = view.getSelectedProductIndex();
+            int qty = Integer.parseInt(view.getOrderQty());
+
+            if (clientIdx != -1 && productIdx != -1) {
+                Client sc = currentClients.get(clientIdx);
+                Product sp = currentProducts.get(productIdx);
+
+                oBLL.insertOrder(new Orders(sc.getId(), sp.getId(), qty));
+                refresh();
+                JOptionPane.showMessageDialog(null, "Order placed!");
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage());
+        }
+    }
+
+    /**
+     * Fetches the entire order history and triggers the log view pop-up panel.
+     */
+    private void handleShowOrders() {
+        List<Orders> allOrders = oBLL.findAllOrders();
+        DefaultTableModel model = CreateTables.generateTable(allOrders);
+        view.showOrdersWindow(model);
     }
 
     /**

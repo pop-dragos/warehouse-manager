@@ -1,12 +1,10 @@
 package DataAccess;
 
-import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.OptionalDouble;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import Connection.ConnectionFactory;
@@ -117,6 +115,33 @@ public class AbstractDAO<T> {
     }
 
     /**
+     * Maps a ResultSet to a list of objects using reflection.
+     * @param resultSet The SQL result set.
+     * @return A list of instantiated objects.
+     */
+    private List<T> createObjects(ResultSet resultSet) {
+        List<T> list = new ArrayList<T>();
+        try {
+            while (resultSet.next()) {
+                T instance = type.getDeclaredConstructor().newInstance();
+
+                for (Field field : type.getDeclaredFields()) {
+                    String fieldName = field.getName();
+                    Object value = resultSet.getObject(fieldName);
+
+                    PropertyDescriptor propertyDescriptor = new PropertyDescriptor(fieldName, type);
+                    Method method = propertyDescriptor.getWriteMethod();
+                    method.invoke(instance, value);
+                }
+                list.add(instance);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error creating object using Reflexion for " + type.getName(), e);
+        }
+        return list;
+    }
+
+    /**
      * Searches for a record by its unique identifier.
      * @param id The ID to search for.
      * @return An instance of T, or null if not found.
@@ -169,33 +194,6 @@ public class AbstractDAO<T> {
             ConnectionFactory.close(connection);
         }
         return null;
-    }
-
-    /**
-     * Maps a ResultSet to a list of objects using reflection.
-     * @param resultSet The SQL result set.
-     * @return A list of instantiated objects.
-     */
-    private List<T> createObjects(ResultSet resultSet) {
-        List<T> list = new ArrayList<T>();
-        try {
-            while (resultSet.next()) {
-                T instance = type.getDeclaredConstructor().newInstance();
-
-                for (Field field : type.getDeclaredFields()) {
-                    String fieldName = field.getName();
-                    Object value = resultSet.getObject(fieldName);
-
-                    PropertyDescriptor propertyDescriptor = new PropertyDescriptor(fieldName, type);
-                    Method method = propertyDescriptor.getWriteMethod();
-                    method.invoke(instance, value);
-                }
-                list.add(instance);
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error creating object using Reflexion for " + type.getName(), e);
-        }
-        return list;
     }
 
     /**
