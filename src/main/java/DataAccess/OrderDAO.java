@@ -1,6 +1,9 @@
 package DataAccess;
 
-import Model.Order;
+import Model.Orders;
 
-public class OrderDAO extends  AbstractDAO<Order> {
+/**
+ * Data Access Object for the Orders entity that extends {@link AbstractDAO}.
+ */
+public class OrderDAO extends AbstractDAO<Orders> {
 }

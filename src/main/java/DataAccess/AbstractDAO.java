@@ -1,29 +1,38 @@
 package DataAccess;
 
-import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import Connection.ConnectionFactory;
 
+/**
+ * Generic Data Access Object class that provides common database operations (CRUD).
+ * It uses Reflection to dynamically generate SQL queries and map database result
+ * sets to Java objects.
+ * @param <T> The type of the entity this DAO handles.
+ */
 public class AbstractDAO<T> {
     protected static final Logger LOGGER = Logger.getLogger(AbstractDAO.class.getName());
 
     private final Class<T> type;
 
+    /**
+     * Constructor that uses reflection to determine the class type of the generic parameter T.
+     */
     @SuppressWarnings("unchecked")
     public AbstractDAO() {
         this.type = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
     }
 
+    /**
+     * Generates a SELECT query filtered by a specific field.
+     * @param field The column name used in the WHERE clause.
+     * @return The SQL query string.
+     */
     private String createSelectQuery(String field) {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ");
@@ -32,6 +41,10 @@ public class AbstractDAO<T> {
         return sb.toString();
     }
 
+    /**
+     * Generates a SELECT * query for the entity table.
+     * @return The SQL query string.
+     */
     private String createSelectAllQuery() {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ");
@@ -39,6 +52,10 @@ public class AbstractDAO<T> {
         return sb.toString();
     }
 
+    /**
+     * Generates an INSERT query based on the fields of the entity class.
+     * @return The SQL query string.
+     */
     private String createInsertQuery() {
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ");
@@ -47,19 +64,27 @@ public class AbstractDAO<T> {
 
         Field[] fields = type.getDeclaredFields();
         for (int i = 0; i < fields.length; i++) {
-            sb.append(fields[i].getName());
-            if (i < fields.length - 1) sb.append(", ");
+            if (!fields[i].getName().equalsIgnoreCase("id")) {
+                sb.append(fields[i].getName());
+                if (i < fields.length - 1) sb.append(", ");
+            }
         }
 
         sb.append(") VALUES (");
         for (int i = 0; i < fields.length; i++) {
-            sb.append("?");
-            if (i < fields.length - 1) sb.append(", ");
+            if (!fields[i].getName().equalsIgnoreCase("id")) {
+                sb.append("?");
+                if (i < fields.length - 1) sb.append(", ");
+            }
         }
         sb.append(")");
         return sb.toString();
     }
 
+    /**
+     * Generates an UPDATE query for the entity.
+     * @return The SQL query string.
+     */
     private String createUpdateQuery() {
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ");
@@ -68,13 +93,19 @@ public class AbstractDAO<T> {
 
         Field[] fields = type.getDeclaredFields();
         for (int i = 0; i < fields.length; i++) {
-            sb.append(fields[i].getName()).append(" = ?");
-            if (i < fields.length - 1) sb.append(", ");
+            if (!fields[i].getName().equalsIgnoreCase("id")) {
+                sb.append(fields[i].getName()).append(" = ?");
+                if (i < fields.length - 1) sb.append(", ");
+            }
         }
         sb.append(" WHERE id = ?");
         return sb.toString();
     }
 
+    /**
+     * Generates a DELETE query filtered by ID.
+     * @return The SQL query string.
+     */
     private String createDeleteQuery() {
         StringBuilder sb = new StringBuilder();
         sb.append("DELETE FROM ");
@@ -83,52 +114,11 @@ public class AbstractDAO<T> {
         return sb.toString();
     }
 
-    public T findById(int id) {
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-        String query = createSelectQuery("id");
-        try {
-            connection = ConnectionFactory.getConnection();
-            statement = connection.prepareStatement(query);
-            statement.setInt(1, id);
-            resultSet = statement.executeQuery();
-
-            List<T> result = createObjects(resultSet);
-            if (result != null && !result.isEmpty()) {
-                return result.get(0);
-            }
-        } catch (SQLException e) {
-            LOGGER.log(Level.WARNING, type.getName() + "DAO:findById " + e.getMessage());
-        } finally {
-            ConnectionFactory.close(resultSet);
-            ConnectionFactory.close(statement);
-            ConnectionFactory.close(connection);
-        }
-        return null;
-    }
-
-    public List<T> findAll() {
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-        String query = createSelectAllQuery();
-        try {
-            connection = ConnectionFactory.getConnection();
-            statement = connection.prepareStatement(query);
-            resultSet = statement.executeQuery();
-
-            return createObjects(resultSet);
-        } catch (SQLException e) {
-            LOGGER.log(Level.WARNING, type.getName() + "DAO:findAll " + e.getMessage());
-        } finally {
-            ConnectionFactory.close(resultSet);
-            ConnectionFactory.close(statement);
-            ConnectionFactory.close(connection);
-        }
-        return null;
-    }
-
+    /**
+     * Maps a ResultSet to a list of objects using reflection.
+     * @param resultSet The SQL result set.
+     * @return A list of instantiated objects.
+     */
     private List<T> createObjects(ResultSet resultSet) {
         List<T> list = new ArrayList<T>();
         try {
@@ -151,35 +141,111 @@ public class AbstractDAO<T> {
         return list;
     }
 
-    public int insert(T t) {
+    /**
+     * Searches for a record by its unique identifier.
+     * @param id The ID to search for.
+     * @return An instance of T, or null if not found.
+     */
+    public T findById(int id) {
         Connection connection = null;
         PreparedStatement statement = null;
-        String query = createInsertQuery();
+        ResultSet resultSet = null;
+        String query = createSelectQuery("id");
         try {
             connection = ConnectionFactory.getConnection();
             statement = connection.prepareStatement(query);
+            statement.setInt(1, id);
+            resultSet = statement.executeQuery();
 
-            Field[] fields = type.getDeclaredFields();
-            for (int i = 0; i < fields.length; i++) {
-                fields[i].setAccessible(true);
-                Object value = fields[i].get(t);
-                statement.setObject(i + 1, value);
+            List<T> result = createObjects(resultSet);
+            if (!result.isEmpty()) {
+                return result.get(0);
             }
-            statement.executeUpdate();
-
-            ResultSet generatedKeys = statement.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                return generatedKeys.getInt(1);
-            }
-        } catch (SQLException | IllegalAccessException e) {
-            LOGGER.log(Level.WARNING, type.getName() + "DAO:insert " + e.getMessage());
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, type.getName() + "DAO:findById " + e.getMessage());
         } finally {
+            ConnectionFactory.close(resultSet);
             ConnectionFactory.close(statement);
             ConnectionFactory.close(connection);
         }
-        return -1;
+        return null;
     }
 
+    /**
+     * Retrieves all records from the corresponding table.
+     * @return A list of entity instances.
+     */
+    public List<T> findAll() {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        String query = createSelectAllQuery();
+        try {
+            connection = ConnectionFactory.getConnection();
+            statement = connection.prepareStatement(query);
+            resultSet = statement.executeQuery();
+
+            return createObjects(resultSet);
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, type.getName() + "DAO:findAll " + e.getMessage());
+        } finally {
+            ConnectionFactory.close(resultSet);
+            ConnectionFactory.close(statement);
+            ConnectionFactory.close(connection);
+        }
+        return null;
+    }
+
+    /**
+     * Inserts an object into the database.
+     * @param t The object to be inserted.
+     * @return The inserted object.
+     */
+    public T insert(T t) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet generatedKeys = null;
+        String query = createInsertQuery();
+        try {
+            connection = ConnectionFactory.getConnection();
+            statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+
+            Field[] fields = type.getDeclaredFields();
+            int parameterIndex = 1;
+            for (Field field : fields) {
+                String fieldName = field.getName();
+                if (fieldName.equalsIgnoreCase("id")) continue;
+
+                PropertyDescriptor propertyDescriptor = new PropertyDescriptor(fieldName, type);
+                Method method = propertyDescriptor.getReadMethod();
+                Object value = method.invoke(t);
+
+                statement.setObject(parameterIndex, value);
+                parameterIndex++;
+            }
+            statement.executeUpdate();
+
+            generatedKeys = statement.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                PropertyDescriptor propertyDescriptor = new PropertyDescriptor("id", type);
+                Method method = propertyDescriptor.getWriteMethod();
+                method.invoke(t, generatedKeys.getInt(1));
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, type.getName() + "DAO:insert " + e.getMessage());
+        } finally {
+            ConnectionFactory.close(generatedKeys);
+            ConnectionFactory.close(statement);
+            ConnectionFactory.close(connection);
+        }
+        return t;
+    }
+
+    /**
+     * Updates an existing record in the database.
+     * @param t The object containing the values to be updated.
+     * @return The updated object.
+     */
     public T update(T t) {
         Connection connection = null;
         PreparedStatement statement = null;
@@ -189,19 +255,26 @@ public class AbstractDAO<T> {
             statement = connection.prepareStatement(query);
 
             Field[] fields = type.getDeclaredFields();
+            int parameterIndex = 1;
             Object idValue = null;
-            int i = 0;
-            for (; i < fields.length; i++) {
-                fields[i].setAccessible(true);
-                Object value = fields[i].get(t);
-                statement.setObject(i + 1, value);
-                if (fields[i].getName().equals("id")) {
-                    idValue = value;
+
+            for (Field field : fields) {
+                String fieldName = field.getName();
+                PropertyDescriptor propertyDescriptor = new PropertyDescriptor(fieldName, type);
+                Method method = propertyDescriptor.getReadMethod();
+
+                if (fieldName.equalsIgnoreCase("id")) {
+                    idValue = method.invoke(t);
+                    continue;
                 }
+
+                Object value = method.invoke(t);
+                statement.setObject(parameterIndex, value);
+                parameterIndex++;
             }
-            statement.setObject(i + 1, idValue);
+            statement.setObject(parameterIndex, idValue);
             statement.executeUpdate();
-        } catch (SQLException | IllegalAccessException e) {
+        } catch (Exception e) {
             LOGGER.log(Level.WARNING, type.getName() + "DAO:update " + e.getMessage());
         } finally {
             ConnectionFactory.close(statement);
@@ -210,6 +283,10 @@ public class AbstractDAO<T> {
         return t;
     }
 
+    /**
+     * Deletes a record from the database.
+     * @param t The object representing the record to be deleted.
+     */
     public void delete(T t) {
         Connection connection = null;
         PreparedStatement statement = null;

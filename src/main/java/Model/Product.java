@@ -1,14 +1,26 @@
 package Model;
 
+/**
+ * Represents a product entity in the system.
+ * This class maps to the "product" table in the database and manages
+ * inventory details such as name and available stock quantity.
+ */
 public class Product {
     private int id;
     private String name;
     private int quantity;
 
+    /**
+     * Default constructor required for reflection-based instantiation.
+     */
     public Product() {}
 
-    public Product(int id, String name, int quantity) {
-        this.id = id;
+    /**
+     * Constructs a new Product with the specified details.
+     * @param name The name of the product.
+     * @param quantity The initial stock quantity available.
+     */
+    public Product(String name, int quantity) {
         this.name = name;
         this.quantity = quantity;
     }
